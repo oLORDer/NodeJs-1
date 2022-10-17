@@ -1,6 +1,8 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+const { nanoid } = require('nanoid');
+
 const contactsPath = path.resolve('./db/contacts.json');
 
 function listContacts() {
@@ -10,20 +12,31 @@ function listContacts() {
 }
 
 function getContactById(contactId) {
-  fs.readFile(contactsPath, 'utf8')
-    .then((data) => data)
-    .then((data) =>
-      console.log(data.split().filter((el) => el.id === contactId))
-    )
+  fs.readFile(contactsPath)
+    .then((data) => JSON.parse(data))
+    .then((data) => console.log(data.filter((el) => el.id === contactId)))
     .catch((err) => console.log(err.message));
 }
 
 function removeContact(contactId) {
-  // ...твой код
+  fs.readFile(contactsPath)
+    .then((data) => JSON.parse(data))
+    .then((data) => {
+      const index = data.findIndex((el) => el.id === contactId);
+      data.splice(index, 1);
+      fs.writeFile(contactsPath, JSON.stringify(data, null, 2));
+    })
+    .catch((err) => console.log(err.message));
 }
 
-function addContact(name, email, phone) {
-  // ...твой код
+function addContact(contact) {
+  fs.readFile(contactsPath)
+    .then((data) => JSON.parse(data))
+    .then((data) => {
+      const newArr = [{ ...contact, id: nanoid() }, ...data];
+      fs.writeFile(contactsPath, JSON.stringify(newArr, null, 2));
+    })
+    .catch((err) => console.log(err.message));
 }
 
 module.exports = {
