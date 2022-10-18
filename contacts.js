@@ -5,38 +5,48 @@ const { nanoid } = require('nanoid');
 
 const contactsPath = path.resolve('./db/contacts.json');
 
-function listContacts() {
-  fs.readFile(contactsPath)
-    .then((data) => console.log(data.toString()))
-    .catch((err) => console.log(err.message));
+async function listContacts() {
+  try {
+    const data = await fs.readFile(contactsPath);
+    return JSON.parse(data);
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
-function getContactById(contactId) {
-  fs.readFile(contactsPath)
-    .then((data) => JSON.parse(data))
-    .then((data) => console.log(data.filter((el) => el.id === contactId)))
-    .catch((err) => console.log(err.message));
+async function getContactById(contactId) {
+  try {
+    const data = await listContacts();
+    const result = data.find((el) => el.id === contactId);
+    return result || null;
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
-function removeContact(contactId) {
-  fs.readFile(contactsPath)
-    .then((data) => JSON.parse(data))
-    .then((data) => {
-      const index = data.findIndex((el) => el.id === contactId);
-      data.splice(index, 1);
-      fs.writeFile(contactsPath, JSON.stringify(data, null, 2));
-    })
-    .catch((err) => console.log(err.message));
+async function removeContact(contactId) {
+  try {
+    const data = await listContacts();
+    const index = await data.findIndex((el) => el.id === contactId);
+    if (index === -1) {
+      return null;
+    }
+    const removedCont = data.splice(index, 1);
+    fs.writeFile(contactsPath, JSON.stringify(data, null, 2));
+    return removedCont;
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
-function addContact(contact) {
-  fs.readFile(contactsPath)
-    .then((data) => JSON.parse(data))
-    .then((data) => {
-      const newArr = [{ ...contact, id: nanoid() }, ...data];
-      fs.writeFile(contactsPath, JSON.stringify(newArr, null, 2));
-    })
-    .catch((err) => console.log(err.message));
+async function addContact(contact) {
+  try {
+    const data = await listContacts();
+    const newArr = [{ ...contact, id: nanoid() }, ...data];
+    fs.writeFile(contactsPath, JSON.stringify(newArr, null, 2));
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
 module.exports = {
